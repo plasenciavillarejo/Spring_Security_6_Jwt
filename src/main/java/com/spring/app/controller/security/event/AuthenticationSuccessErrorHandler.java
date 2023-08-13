@@ -42,10 +42,11 @@ public class AuthenticationSuccessErrorHandler implements AuthenticationEventPub
 		*/
 		// 1.- Si implementamos el UserDetailService tendremos que devolver el siguiente objeto:
 		UserDetails user = (UserDetails) authentication.getPrincipal();
+		LOGGER.info("Success Login with UserDetails: {}", user.getUsername());
 		
-		// Si implemento el AuthenticationProvider() tengo que cambiar la forma en la que devuelvo el objeto
+		// 2.- Si implemento el AuthenticationProvider() tengo que cambiar la forma en la que devuelvo el objeto
 		//UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials());
-		LOGGER.info("Success Login: {}", user.getUsername());
+		//LOGGER.info("Success Login with UserDetails: {}", user.getPrincipal());
 	}
 
 	@Override
