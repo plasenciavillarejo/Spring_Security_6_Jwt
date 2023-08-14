@@ -25,6 +25,7 @@ import com.spring.app.models.entity.LoginRequest;
 import com.spring.app.models.entity.RegisterRequest;
 import com.spring.app.models.entity.Role;
 import com.spring.app.models.entity.Usuario;
+import com.spring.app.utility.Utilidades;
 
 
 // Clase encargada de Registrar un nuevo usuario en BBDD y de hacer el login para autenticarse y devolver el token.
@@ -48,6 +49,9 @@ public class AuthService {
 	
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private Utilidades utilidades;
 	
 	// 1.- Registra el usuario dentro de nuestra aplicación
 	public AuthResponse register(RegisterRequest register) {
@@ -94,12 +98,12 @@ public class AuthService {
 		  aplicación en función de la identidad del usuario.*/
 		UserDetails user = (UserDetails) authentication.getPrincipal();
 		
-		// Transformarmos el objeto UserDetails en nuestro Usuario de otra forma no podemos castearlo para poder crear el token
+		Usuario usuarioAplicacion = utilidades.usuarioDevuelto(user);
+		/*
 		Usuario usuarioAplicacion= new Usuario();
 		usuarioAplicacion.setUsername(userDetails.getUsername());
 		usuarioAplicacion.setPassword(userDetails.getPassword());				
 		
-		// Recuperamos los roles
 		Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 		
 		List<Role> roles = new ArrayList<>();
@@ -109,7 +113,7 @@ public class AuthService {
 		    roles.add(nombreRol);
 		}
 		usuarioAplicacion.setRoles(roles);
-		
+		*/
 		String token = "";
 		String refreshToken = "";
 		if(userDetails != null) {

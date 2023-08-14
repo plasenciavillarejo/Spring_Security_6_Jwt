@@ -17,9 +17,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import com.spring.app.filter.CustomAuthenticationFilter;
+import com.spring.app.filter.CustomAuthenticationProvider;
 import com.spring.app.filter.CustomFilterSpringSecurity;
 import com.spring.app.jwt.JwtAuthenticationFilter;
-import com.spring.app.models.serviceimpl.CustomAuthenticationProvider;
+import com.spring.app.jwt.JwtService;
 
 @Configuration
 @EnableWebSecurity
@@ -46,6 +48,9 @@ public class SpringSecurityConfig {
     
 	@Autowired
 	private CustomAuthenticationProvider authenticationProvider;
+
+	@Autowired
+	private JwtService jwtService;
 	
 	@Bean
     public RequestMatcher customRequestMatcher() {
@@ -57,16 +62,21 @@ public class SpringSecurityConfig {
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 		// Validación propia de spring security
-		auth.userDetailsService(this.usuarioService).passwordEncoder(passwordEncoder())
-		.and()
+		auth.userDetailsService(this.usuarioService).passwordEncoder(passwordEncoder());
+		//.and()
 		//auth.authenticationProvider(authenticationProvider);
 		// Registramos nuestro evento para AuthenticationSuccesErrorHandler.java
-		.authenticationEventPublisher(eventPublisher);
+		//.authenticationEventPublisher(eventPublisher);
 	}  
 	
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-						
+	public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+	
+		/*
+		CustomAuthenticationFilter c = new CustomAuthenticationFilter();
+		c.setAuthenticationManager(authenticationManager);
+		c.setFilterProcessesUrl("/authentication/login");
+		*/
 		http.csrf().disable()
 			// Para poder acceder a h2 debemos deshabilitar los frame de la cabecera
 			.headers().frameOptions().sameOrigin()
@@ -78,7 +88,8 @@ public class SpringSecurityConfig {
 			// Inhabilitamos la sesiones
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			// Autenticación basada en JWT
+			// Validación de forma personalizada
+			.addFilter(new CustomAuthenticationFilter(authenticationManager, jwtService, customRequestMatcher()))
 			//.addFilterBefore(new CustomFilterSpringSecurity(customRequestMatcher()),UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 			

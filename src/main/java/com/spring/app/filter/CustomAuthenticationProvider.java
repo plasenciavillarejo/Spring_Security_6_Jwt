@@ -1,4 +1,4 @@
-package com.spring.app.models.serviceimpl;
+package com.spring.app.filter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.app.models.entity.Usuario;
+import com.spring.app.models.serviceimpl.UsuarioServiceImpl;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
