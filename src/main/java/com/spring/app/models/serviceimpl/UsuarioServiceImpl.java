@@ -1,6 +1,8 @@
 package com.spring.app.models.serviceimpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -30,30 +32,31 @@ public class UsuarioServiceImpl implements  UserDetailsService,IUsuarioService{
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		
-			try {	
+		try {
 			Usuario usuario = usuarioDao.findByUsername(username);
-						
-				// Los roles son de el tipo genérico de la interfaz GrantedAuthority, tenemos que convertir los roles en GrantedAuthority utilizando la api de java 8 'stream()'
-				List<GrantedAuthority> authorities = usuario.getRoles()
-						.stream()
-						.map(role -> new SimpleGrantedAuthority(role.getNombre()))
-						// Por cada rol vamos a mostrar el nombre de el usuario, como ya lo hemos pasado a Authority(), podremos utilizarlo. 
-						.peek(authority -> LOGGER.info("Rol identificado: {}", authority.getAuthority()))
-						// Convertimos a un tipo list
-						.collect(Collectors.toList());
-				
-				LOGGER.info("Usuario autenticado en la aplicación: {}", username);
-				
-				return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true, authorities);
-				
-				}catch (UsernameNotFoundException e) {
-					LOGGER.error("Error en el login, no existe el usario '"+username+"' en el sistema");
-					throw new UsernameNotFoundException("Error en el login, no existe el usario '"+username+"' en el sistema");
-				}	
+
+			// Los roles son de el tipo genérico de la interfaz GrantedAuthority, tenemos
+			// que convertir los roles en GrantedAuthority utilizando la api de java 8 'stream()'
+			List<GrantedAuthority> authorities = usuario.getRoles().stream()
+					.map(role -> new SimpleGrantedAuthority(role.getNombre()))
+					// Por cada rol vamos a mostrar el nombre de el usuario, como ya lo hemos pasado
+					// a Authority(), podremos utilizarlo.
+					.peek(authority -> LOGGER.info("Rol identificado: {}", authority.getAuthority()))
+					// Convertimos a un tipo list
+					.collect(Collectors.toList());
+
+			LOGGER.info("Usuario autenticado en la aplicación: {}", username);
+
+			return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true,
+					authorities);
+
+		} catch (UsernameNotFoundException e) {
+			LOGGER.error("Error en el login, no existe el usario '" + username + "' en el sistema");
+			throw new UsernameNotFoundException(
+					"Error en el login, no existe el usario '" + username + "' en el sistema");
+		}
 	}
-	
-	
+
 	public Usuario save(Usuario usuario) {
 		return usuarioDao.save(usuario);
 	}

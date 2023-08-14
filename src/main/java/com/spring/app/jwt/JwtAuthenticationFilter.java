@@ -40,19 +40,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 		
 		String username = "";
 		
-		// Si el token es vacío retornamos a la cadena de filtros y retornamos
-		if(token == null) {
+		// Si el token es vacío o es la pagina de login donde se crea el token debo dejar que continue, de otra forma cuando expire el token nunca podre crear otro nuevo.
+		if(token == null || request.getRequestURI().equals("/login")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		
+			
 		// Obtenemos el token desde nuestra clase jwtService
 		username = jwtService.getUsernameFromToken(token);
 		
 		// Si no encontramos el username y no está validado en el contexto de spring security vamos a buscarlo en la base de datos con el userDetailService
 		if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			UserDetails userDetails = userDetailService.loadUserByUsername(username);
-			
+			UserDetails userDetails = userDetailService.loadUserByUsername(username);			
 			if(jwtService.isTokenValid(token,userDetails)) {
 				// Si es valido, procedemos actualizar el SecurityContextHolder a traves de el UsernamePasswordAuthenticationToken
 				UsernamePasswordAuthenticationToken actualizarTokenSecurity = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()); 
@@ -62,13 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 				
 				// Almacenamos en el contexto de spring security
 				SecurityContextHolder.getContext().setAuthentication(actualizarTokenSecurity);
-			}
-			
-		}
-		
-		filterChain.doFilter(request, response);
-		
-		
+			}			
+		}		
+		filterChain.doFilter(request, response);		
 	}
 
 	

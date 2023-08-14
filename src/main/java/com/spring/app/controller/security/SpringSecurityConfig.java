@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import com.spring.app.filter.CustomFilterSpringSecurity;
 import com.spring.app.jwt.JwtAuthenticationFilter;
 import com.spring.app.models.serviceimpl.CustomAuthenticationProvider;
 
@@ -46,6 +47,12 @@ public class SpringSecurityConfig {
 	@Autowired
 	private CustomAuthenticationProvider authenticationProvider;
 	
+	@Bean
+    public RequestMatcher customRequestMatcher() {
+		// Intercepta la petición antes de que se logue el usuario.
+		return new AntPathRequestMatcher("/authentication/login");
+    }
+	
     
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -59,6 +66,7 @@ public class SpringSecurityConfig {
 	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+						
 		http.csrf().disable()
 			// Para poder acceder a h2 debemos deshabilitar los frame de la cabecera
 			.headers().frameOptions().sameOrigin()
@@ -71,6 +79,7 @@ public class SpringSecurityConfig {
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
 			// Autenticación basada en JWT
+			//.addFilterBefore(new CustomFilterSpringSecurity(customRequestMatcher()),UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 			
 		return http.build();

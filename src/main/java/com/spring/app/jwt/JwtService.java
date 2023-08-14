@@ -9,9 +9,11 @@ import java.util.function.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.spring.app.models.entity.TokenListaNegra;
 import com.spring.app.models.entity.Usuario;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -28,14 +30,20 @@ public class JwtService {
 		return getToken(new HashMap<>(),user);
 	}
 
+	public String refreshTokenGenerate(Usuario usuario) {
+		return getRefreshToken(new HashMap<>(),usuario);
+	}
+	
 	private String getToken(Map<String, Object> claims, Usuario user) {
 		return Jwts.builder()
 				.setClaims(claims)
 				.setSubject(user.getUsername())
 				// Fecha de Creación
 				.setIssuedAt(new Date(System.currentTimeMillis()))
-				// Fecha de Expiración; (se suma 1 dia)
-				.setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
+				// Fecha de Expiración; (12 hora tarda el token)
+				//.setExpiration(new Date(System.currentTimeMillis() + 12L * 60 * 60 * 1000))
+				// Un minuto de expiración
+				.setExpiration(new Date(System.currentTimeMillis() + 60 * 1000))
 				// Pasamos la firma
 				// Dado que estás utilizando el algoritmo HMAC-SHA256, que requiere una clave de al menos 256 bits (32 bytes), debes asegurarte de que la longitud de tu clave sea de al menos 32 bytes.
 				.signWith(getKey(), SignatureAlgorithm.HS256)
@@ -43,12 +51,29 @@ public class JwtService {
 				.compact();
 	}
 
+	
+	private String getRefreshToken(Map<String, Object> claims, Usuario user) {
+		return Jwts.builder()
+				.setClaims(claims)
+				.setSubject(user.getUsername())
+				// Fecha de Creación
+				.setIssuedAt(new Date(System.currentTimeMillis()))
+				// Fecha de Expiración; (se suma 1 dia)
+				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+				// Pasamos la firma
+				// Dado que estás utilizando el algoritmo HMAC-SHA256, que requiere una clave de al menos 256 bits (32 bytes), debes asegurarte de que la longitud de tu clave sea de al menos 32 bytes.
+				.signWith(getKey(), SignatureAlgorithm.HS256)
+				// Crea el objeto y lo serializa
+				.compact();
+	}
+	
 	private Key getKey() {
 		byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
 		// Creamos una nueva instancia de nuestra secret key
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
 
+	
 	/* ## FIN: Método encargado de generar el token cuando se entra por el endpoint /register  ## */
 	/* ########################################################################################## */
 	
@@ -75,7 +100,7 @@ public class JwtService {
 		return fechaExpiracion(token).before(new Date());
 	}
 	
-	// Obtengo todos los claims de el token
+	// Validación Token desde los claims 
 	private Claims obtenerClaims(String token) {
 		return Jwts.parserBuilder()
 				.setSigningKey(getKey())
@@ -86,7 +111,14 @@ public class JwtService {
 	
 	// Obtenemos un claim en particular utilizando un objeto genérico
 	public <T> T obtenerClaimConcreto(String token, Function<Claims, T> claimsResolver) {
-		Claims claims = obtenerClaims(token);
+		Claims claims = null;
+		try { 
+		 claims = obtenerClaims(token);
+		} catch (ExpiredJwtException  e) {
+			// Si el token ha expirado procedemos a capturar dicho token y almacenarlo en la lista negra
+			TokenListaNegra.addToBlacklist(token);
+			throw new ExpiredJwtException(null, claims, "Token Expirado");
+		}
 		return claimsResolver.apply(claims);
 	}
 	
