@@ -88,9 +88,8 @@ public class SpringSecurityConfig {
 			// Inhabilitamos la sesiones
 			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			// Validación de forma personalizada
+			// Validación de forma personalizada, el filtro valida al usuario, lo autentica y devuelve un token.
 			.addFilter(new CustomAuthenticationFilter(authenticationManager, jwtService, customRequestMatcher()))
-			//.addFilterBefore(new CustomFilterSpringSecurity(customRequestMatcher()),UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 			
 		return http.build();

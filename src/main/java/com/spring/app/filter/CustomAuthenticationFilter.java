@@ -60,37 +60,34 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 	}
 	
 	@Override
-	    protected void successfulAuthentication(HttpServletRequest request,
-	                                            HttpServletResponse response,
-	                                            FilterChain chain,
-	                                            Authentication authResult) throws IOException, ServletException {
-		
-	        User user = (User) authResult.getPrincipal();
-	        
-	        Usuario usuario = utilidades.usuarioDevuelto(user); 
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+			Authentication authResult) throws IOException, ServletException {
 
-	        String token = jwtService.getToken(usuario);
-	        String refreshToken = jwtService.getToken(usuario);
-	        
-	        response.addHeader("Authorization", token);
+		User user = (User) authResult.getPrincipal();
 
-	        Map<String, Object> httpResponse = new HashMap<>();
-	        httpResponse.put("token", token);
-	        httpResponse.put("refreshToken", refreshToken);
-	        httpResponse.put("Message", "Autenticacion Correcta");
-	        httpResponse.put("Username", user.getUsername());
+		Usuario usuario = utilidades.usuarioDevuelto(user);
 
-	        
-			AuthResponse usuarioRespuesta = new AuthResponse();
-			//usuarioRespuesta.setMensaje("Inicio de sesión correcto");
-			usuarioRespuesta.setToken(token);
-			usuarioRespuesta.setRefreshToken(refreshToken);
-	        			
-	        response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
-	        response.setStatus(HttpStatus.OK.value());
-	        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-	        response.getWriter().flush();
-	    }
+		String token = jwtService.getToken(usuario);
+		String refreshToken = jwtService.refreshTokenGenerate(usuario);
+
+		response.addHeader("Authorization", token);
+
+		Map<String, Object> httpResponse = new HashMap<>();
+		httpResponse.put("token", token);
+		httpResponse.put("refreshToken", refreshToken);
+		httpResponse.put("Message", "Autenticacion Correcta");
+		httpResponse.put("Username", user.getUsername());
+
+		AuthResponse usuarioRespuesta = new AuthResponse();
+		// usuarioRespuesta.setMensaje("Inicio de sesión correcto");
+		usuarioRespuesta.setToken(token);
+		usuarioRespuesta.setRefreshToken(refreshToken);
+
+		response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
+		response.setStatus(HttpStatus.OK.value());
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.getWriter().flush();
+	}
 	    
 	
 	@Override
@@ -100,7 +97,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 		Map<String, Object> body = new HashMap<String, Object>();
 		body.put("mensaje", "Error de autenticación: username o password incorrecto!");
 		body.put("error", failed.getMessage());
-		
+
 		response.getWriter().write(new ObjectMapper().writeValueAsString(body));
 		response.setStatus(401);
 		response.setContentType("application/json");

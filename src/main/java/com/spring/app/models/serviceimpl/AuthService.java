@@ -83,7 +83,7 @@ public class AuthService {
 		return usuarioRespuesta;
 	}
 			
-	// 2.- Hace login el usuario dentro de nuestra aplicación
+	// 2.- Hace login el usuario dentro de nuestra aplicación. (Si utilzo el filtro CustomAuthenticationFilter.java para loguear no entra aquí)
 	public AuthResponse login(LoginRequest login) {
 		
 		/* 1.- Realiza el proceso de autenticación. Luego, el objeto authentication contendrá la información de autenticación resultante, que se puede usar posteriormente para tomar decisiones de autorización 
@@ -99,21 +99,7 @@ public class AuthService {
 		UserDetails user = (UserDetails) authentication.getPrincipal();
 		
 		Usuario usuarioAplicacion = utilidades.usuarioDevuelto(user);
-		/*
-		Usuario usuarioAplicacion= new Usuario();
-		usuarioAplicacion.setUsername(userDetails.getUsername());
-		usuarioAplicacion.setPassword(userDetails.getPassword());				
-		
-		Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-		
-		List<Role> roles = new ArrayList<>();
-		for (GrantedAuthority authority : authorities) {
-		    Role nombreRol = new Role();
-		    nombreRol.setNombre(authority.getAuthority());
-		    roles.add(nombreRol);
-		}
-		usuarioAplicacion.setRoles(roles);
-		*/
+				
 		String token = "";
 		String refreshToken = "";
 		if(userDetails != null) {
