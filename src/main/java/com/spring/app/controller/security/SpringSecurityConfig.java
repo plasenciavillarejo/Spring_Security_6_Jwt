@@ -19,7 +19,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import com.spring.app.filter.CustomAuthenticationFilter;
 import com.spring.app.filter.CustomAuthenticationProvider;
-import com.spring.app.filter.CustomFilterSpringSecurity;
 import com.spring.app.jwt.JwtAuthenticationFilter;
 import com.spring.app.jwt.JwtService;
 
@@ -83,6 +82,7 @@ public class SpringSecurityConfig {
 			.and()
 			.authorizeHttpRequests()
 			.antMatchers("/authentication/**").permitAll()
+			.antMatchers("/authentication/login").authenticated()
 			.anyRequest().authenticated()
 			.and()
 			// Inhabilitamos la sesiones
