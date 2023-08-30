@@ -16,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -28,11 +30,12 @@ import com.spring.app.models.entity.Usuario;
 import com.spring.app.utility.Utilidades;
 
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-
+	
 	private AuthenticationManager authenticationManagerExterno;
 	private JwtService jwtService;
 	
 	private Utilidades utilidades = new Utilidades();
+	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	public CustomAuthenticationFilter(AuthenticationManager authenticationManager, JwtService jwtService, RequestMatcher requestMatcher) {
 		this.authenticationManagerExterno = authenticationManager;
@@ -83,6 +86,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 		usuarioRespuesta.setToken(token);
 		usuarioRespuesta.setRefreshToken(refreshToken);
 
+		// Se redirige la información hacia un controlador.
+		// redirectStrategy.sendRedirect(request, response, "/api/v1/prueba");
+		
 		response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
 		response.setStatus(HttpStatus.OK.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
