@@ -35,8 +35,15 @@ public class JwtService {
 	}
 	
 	private String getToken(Map<String, Object> claims, Usuario user) {
+		
+		Map<String, Object> claimExtra = new HashMap<>();
+		claimExtra.put("nombreUsuario", "asdfasdf");
+		claimExtra.put("apellidoUsuario", "asdfasdfasdfasdf");
+		claimExtra.put("emailUsuario", "asdfasdf123sd");
+		
 		return Jwts.builder()
 				.setClaims(claims)
+				.setClaims(claimExtra)
 				.setSubject(user.getUsername())
 				// Fecha de Creación
 				.setIssuedAt(new Date(System.currentTimeMillis()))
@@ -55,6 +62,9 @@ public class JwtService {
 	private String getRefreshToken(Map<String, Object> claims, Usuario user) {
 		return Jwts.builder()
 				.setClaims(claims)
+				.claim("nombreUsuario", "joseplasencia")
+				.claim("apellidoUsuario", "pepe")
+				.claim("emailUsuario", "asdfasdf")
 				.setSubject(user.getUsername())
 				// Fecha de Creación
 				.setIssuedAt(new Date(System.currentTimeMillis()))
